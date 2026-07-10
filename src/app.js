@@ -10,10 +10,14 @@ import { apiLimiter } from "./middleware/rateLimiter.middleware.js";
 
 const app = express();
 
+// Trust Vercel's reverse proxy so Express and express-rate-limit
+// can correctly determine the client's IP address.
+app.set("trust proxy", 1);
+
 const allowedOrigins = [
-  "http://localhost:5173", // Vite dev
-  "http://localhost:3000", // React/Next dev (optional)
-  "https://kollecsion.vercel.app", // Production
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://kollecsion.vercel.app",
 ];
 
 app.use(helmet());
@@ -21,8 +25,10 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow requests without an Origin header (e.g. Postman, curl)
-      if (!origin) return callback(null, true);
+      // Allow requests without an Origin header (Postman, curl, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -47,9 +53,12 @@ app.use(
 
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/health", (req, res) =>
-  res.json({ success: true, message: "API is healthy" })
-);
+app.get("/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "API is healthy",
+  });
+});
 
 app.use("/api", apiLimiter, routes);
 
