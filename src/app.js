@@ -17,7 +17,7 @@ app.set("trust proxy", 1);
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  "https://kollecsion.vercel.app",
+  "https://collected-frontend.onrender.com/",
 ];
 
 app.use(helmet());
