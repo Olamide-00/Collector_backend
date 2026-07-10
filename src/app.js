@@ -1,36 +1,59 @@
-import express from 'express'
-import cors from 'cors'
-import helmet from 'helmet'
-import morgan from 'morgan'
-import compression from 'compression'
-import { env } from './config/env.js'
-import routes from './routes/index.js'
-import { notFound, errorHandler } from './middleware/error.middleware.js'
-import { apiLimiter } from './middleware/rateLimiter.middleware.js'
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import compression from "compression";
+import { env } from "./config/env.js";
+import routes from "./routes/index.js";
+import { notFound, errorHandler } from "./middleware/error.middleware.js";
+import { apiLimiter } from "./middleware/rateLimiter.middleware.js";
 
-const app = express()
+const app = express();
 
-app.use(helmet())
-app.use(cors({ origin: env.clientUrl }))
-app.use(compression())
-app.use(morgan(env.isProduction ? 'combined' : 'dev'))
+const allowedOrigins = [
+  "http://localhost:5173", // Vite dev
+  "http://localhost:3000", // React/Next dev (optional)
+  "https://kollecsion.vercel.app", // Production
+];
 
-// Captures the raw request body (needed to verify the Paystack webhook signature)
-// while still parsing JSON normally for every other route.
+app.use(helmet());
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Allow requests without an Origin header (e.g. Postman, curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true,
+  })
+);
+
+app.use(compression());
+app.use(morgan(env.isProduction ? "combined" : "dev"));
+
 app.use(
   express.json({
     verify: (req, res, buf) => {
-      req.rawBody = buf
+      req.rawBody = buf;
     },
   })
-)
-app.use(express.urlencoded({ extended: true }))
+);
 
-app.get('/health', (req, res) => res.json({ success: true, message: 'API is healthy' }))
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/api', apiLimiter, routes)
+app.get("/health", (req, res) =>
+  res.json({ success: true, message: "API is healthy" })
+);
 
-app.use(notFound)
-app.use(errorHandler)
+app.use("/api", apiLimiter, routes);
 
-export default app
+app.use(notFound);
+app.use(errorHandler);
+
+export default app;
