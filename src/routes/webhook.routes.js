@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { handlePaystackWebhook } from '../controllers/webhook.controller.js'
+import { Router } from "express";
+import { handleFlutterwaveWebhook } from "../controllers/webhook.controller.js";
 
-const router = Router()
+const router = Router();
 
-router.post('/paystack', handlePaystackWebhook)
+router.post("/webhook", handleFlutterwaveWebhook);
 
-export default router
+export default router;

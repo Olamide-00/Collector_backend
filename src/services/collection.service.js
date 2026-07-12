@@ -3,10 +3,10 @@ import { ApiError } from "../utils/ApiError.js";
 import { HTTP } from "../constants/httpStatus.js";
 import { ROLES } from "../constants/roles.js";
 import { ACCOUNT_STATUS } from "../constants/collection.js";
-import * as paystackService from "./paystack.service.js";
+import * as flutterwaveService from "./flutterwave.js";
 import * as userService from "./user.service.js";
 
-// Calls Paystack to create a customer + dedicated virtual account for a collection,
+// Calls Flutterwave to create a customer + dedicated virtual account for a collection,
 // then persists the result. Any failure marks the collection accountStatus 'failed'
 // so the frontend can offer a retry — it never throws back to the caller.
 async function provisionDedicatedAccount(
@@ -15,21 +15,21 @@ async function provisionDedicatedAccount(
   customerPhone
 ) {
   try {
-    const customer = await paystackService.createCustomer({
+    const customer = await flutterwaveService.createCustomer({
       email: customerEmail,
       name: collection.name,
       phone: customerPhone,
     });
-    const dva = await paystackService.createDedicatedVirtualAccount(
-      customer.customer_code
+    const dva = await flutterwaveService.createDedicatedVirtualAccount(
+      customer.id
     );
 
     collection.paymentAccount = {
-      bankName: dva.bank?.name,
+      bankName: dva.bank_name,
       accountNumber: dva.account_number,
-      accountName: dva.account_name,
-      paystackCustomerCode: customer.customer_code,
-      paystackDedicatedAccountId: dva.id ? dva.id.toString() : undefined,
+      accountName: collection.name,
+      flutterwaveCustomerId: customer.id,
+      flutterwaveVirtualAccountId: dva.id,
     };
     collection.accountStatus = ACCOUNT_STATUS.ACTIVE;
   } catch (err) {

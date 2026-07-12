@@ -10,8 +10,6 @@ import { apiLimiter } from "./middleware/rateLimiter.middleware.js";
 
 const app = express();
 
-// Trust Vercel's reverse proxy so Express and express-rate-limit
-// can correctly determine the client's IP address.
 app.set("trust proxy", 1);
 
 const allowedOrigins = [
