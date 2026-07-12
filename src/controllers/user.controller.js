@@ -13,3 +13,8 @@ export const assignLogin = catchAsync(async (req, res) => {
   );
   sendSuccess(res, HTTP.OK, "Login assigned", { user });
 });
+
+export const getLogin = catchAsync(async (req, res) => {
+  const user = await userService.getUserForCollection(req.params.id);
+  sendSuccess(res, HTTP.OK, "Login fetched", { user });
+});
