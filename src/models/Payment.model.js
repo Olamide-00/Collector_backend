@@ -47,7 +47,22 @@ const paymentSchema = new mongoose.Schema(
       sparse: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret) => {
+        ret.id = ret._id.toString();
+        ret.collectionId = ret.collection
+          ? ret.collection.toString()
+          : undefined;
+        delete ret._id;
+        delete ret.collection;
+        delete ret.__v;
+        return ret;
+      },
+    },
+  }
 );
 
 export const Payment = mongoose.model("Payment", paymentSchema);
