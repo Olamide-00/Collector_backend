@@ -1,16 +1,16 @@
-import mongoose from 'mongoose'
-import { COLLECTION_STATUS, ACCOUNT_STATUS } from '../constants/collection.js'
+import mongoose from "mongoose";
+import { COLLECTION_STATUS, ACCOUNT_STATUS } from "../constants/collection.js";
 
 const paymentAccountSchema = new mongoose.Schema(
   {
     bankName: String,
     accountNumber: String,
     accountName: String,
-    paystackCustomerCode: String,
-    paystackDedicatedAccountId: String,
+    flutterwaveCustomerId: String,
+    flutterwaveVirtualAccountId: String,
   },
   { _id: false }
-)
+);
 
 const collectionSchema = new mongoose.Schema(
   {
@@ -49,11 +49,11 @@ const collectionSchema = new mongoose.Schema(
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
   },
   { timestamps: true }
-)
+);
 
-export const Collection = mongoose.model('Collection', collectionSchema)
+export const Collection = mongoose.model("Collection", collectionSchema);

@@ -26,7 +26,6 @@ const envSchema = Joi.object({
     "any.required": "FLUTTERWAVE_SECRET_HASH is required in .env",
   }),
   FLUTTERWAVE_CURRENCY: Joi.string().default("NGN"),
-  FLUTTERWAVE_PREFERRED_BANK: Joi.string().allow("").optional(),
   CLIENT_URL: Joi.string().default("http://localhost:5173"),
 }).unknown(true);
 
@@ -49,7 +48,6 @@ export const env = {
   flutterwaveBaseUrl: envVars.FLUTTERWAVE_BASE_URL,
   flutterwaveSecretHash: envVars.FLUTTERWAVE_SECRET_HASH,
   flutterwaveCurrency: envVars.FLUTTERWAVE_CURRENCY,
-  flutterwavePreferredBank: envVars.FLUTTERWAVE_PREFERRED_BANK,
 
   clientUrl: envVars.CLIENT_URL,
   isProduction: envVars.NODE_ENV === "production",

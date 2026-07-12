@@ -1,12 +1,12 @@
-import mongoose from 'mongoose'
-import { ROLES } from '../constants/roles.js'
-import { PAYMENT_SOURCE } from '../constants/collection.js'
+import mongoose from "mongoose";
+import { ROLES } from "../constants/roles.js";
+import { PAYMENT_SOURCE } from "../constants/collection.js";
 
 const paymentSchema = new mongoose.Schema(
   {
     collection: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Collection',
+      ref: "Collection",
       required: true,
       index: true,
     },
@@ -33,7 +33,7 @@ const paymentSchema = new mongoose.Schema(
     },
     recordedByRole: {
       type: String,
-      enum: [...Object.values(ROLES), 'system'],
+      enum: [...Object.values(ROLES), "system"],
       required: true,
     },
     source: {
@@ -48,6 +48,6 @@ const paymentSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
-)
+);
 
-export const Payment = mongoose.model('Payment', paymentSchema)
+export const Payment = mongoose.model("Payment", paymentSchema);

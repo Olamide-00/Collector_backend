@@ -86,20 +86,32 @@ export async function createCustomer({ email, name, phone }) {
   }
 }
 
-export async function createDedicatedVirtualAccount(customerId) {
+// bvn: the debtor's 11-digit BVN or NIN — required by Flutterwave for NGN static
+// accounts. Never persisted; passed straight through and discarded after the call.
+export async function createDedicatedVirtualAccount(customerId, bvn) {
   const client = await flutterwaveClient();
+
+  // Flutterwave requires `reference` to be strictly alphanumeric — strip everything else
+  const reference = `dva${customerId}${Date.now()}`.replace(
+    /[^a-zA-Z0-9]/g,
+    ""
+  );
 
   try {
     const { data } = await client.post("/virtual-accounts", {
-      reference: `dva-${customerId}-${Date.now()}`,
+      reference,
       customer_id: customerId,
       amount: 0, // 0 = static/permanent account, reusable across payments
       currency: env.flutterwaveCurrency ?? "NGN",
       account_type: "static",
-      bank_code: env.flutterwavePreferredBank,
+      bvn,
     });
     return data.data;
   } catch (err) {
+    console.error(
+      "Flutterwave VA error body:",
+      JSON.stringify(err.response?.data)
+    );
     throw new ApiError(
       HTTP.BAD_GATEWAY,
       `Flutterwave dedicated account creation failed: ${

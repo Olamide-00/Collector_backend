@@ -9,10 +9,12 @@ import * as userService from "./user.service.js";
 // Calls Flutterwave to create a customer + dedicated virtual account for a collection,
 // then persists the result. Any failure marks the collection accountStatus 'failed'
 // so the frontend can offer a retry — it never throws back to the caller.
+// bvn is passed through only, never stored on the collection or user record.
 async function provisionDedicatedAccount(
   collection,
   customerEmail,
-  customerPhone
+  customerPhone,
+  bvn
 ) {
   try {
     const customer = await flutterwaveService.createCustomer({
@@ -21,11 +23,12 @@ async function provisionDedicatedAccount(
       phone: customerPhone,
     });
     const dva = await flutterwaveService.createDedicatedVirtualAccount(
-      customer.id
+      customer.id,
+      bvn
     );
 
     collection.paymentAccount = {
-      bankName: dva.bank_name,
+      bankName: dva.account_bank_name,
       accountNumber: dva.account_number,
       accountName: collection.name,
       flutterwaveCustomerId: customer.id,
@@ -40,7 +43,7 @@ async function provisionDedicatedAccount(
 }
 
 export async function createCollection(
-  { name, totalAmount, loginEmail, loginPassword, loginPhone },
+  { name, totalAmount, loginEmail, loginPassword, loginPhone, loginBvn },
   adminId
 ) {
   const collection = await Collection.create({
@@ -57,12 +60,12 @@ export async function createCollection(
     loginPassword,
     loginPhone
   );
-  await provisionDedicatedAccount(collection, loginEmail, loginPhone);
+  await provisionDedicatedAccount(collection, loginEmail, loginPhone, loginBvn);
 
   return collection;
 }
 
-export async function retryAccountCreation(collectionId) {
+export async function retryAccountCreation(collectionId, bvn) {
   const collection = await Collection.findById(collectionId);
   if (!collection) {
     throw new ApiError(HTTP.NOT_FOUND, "Collection not found");
@@ -81,10 +84,16 @@ export async function retryAccountCreation(collectionId) {
       "This collection's login has no phone number on file — reset the login with a phone number first"
     );
   }
+  if (!bvn) {
+    throw new ApiError(
+      HTTP.BAD_REQUEST,
+      "A BVN or NIN is required to create a static virtual account"
+    );
+  }
 
   collection.accountStatus = ACCOUNT_STATUS.CREATING;
   await collection.save();
-  await provisionDedicatedAccount(collection, user.email, user.phone);
+  await provisionDedicatedAccount(collection, user.email, user.phone, bvn);
   return collection;
 }
 
