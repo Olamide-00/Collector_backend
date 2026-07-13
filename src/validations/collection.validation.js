@@ -7,6 +7,10 @@ export const createCollectionSchema = Joi.object({
   totalAmount: Joi.number().positive().required(),
   loginEmail: Joi.string().email().required(),
   loginPassword: Joi.string().min(4).required(),
+  loginPhone: Joi.string().pattern(phonePattern).required().messages({
+    "string.pattern.base":
+      "Phone number must be 10-15 digits, with an optional leading +",
+  }),
   loginBvn: Joi.string().length(11).pattern(/^\d+$/).required(),
 });
 

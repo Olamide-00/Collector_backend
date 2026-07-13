@@ -54,12 +54,22 @@ export async function createCollection(
     createdBy: adminId,
   });
 
-  await userService.assignDebtorLogin(
-    collection._id,
-    loginEmail,
-    loginPassword,
-    loginPhone
-  );
+  // The collection is already persisted at this point. If assigning the
+  // debtor login fails for any reason (duplicate email, validation error,
+  // etc.), we must not leave an orphaned collection with no user attached
+  // to it — roll it back and surface a clear error instead.
+  try {
+    await userService.assignDebtorLogin(
+      collection._id,
+      loginEmail,
+      loginPassword,
+      loginPhone
+    );
+  } catch (err) {
+    await Collection.findByIdAndDelete(collection._id);
+    throw err;
+  }
+
   await provisionDedicatedAccount(collection, loginEmail, loginPhone, loginBvn);
 
   return collection;
