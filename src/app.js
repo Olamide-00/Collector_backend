@@ -16,6 +16,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://collected-frontend.onrender.com",
+  "https://www.swiftridelogistics.com.ng",
+  "https://swiftridelogistics.com.ng",
 ];
 
 app.use(helmet());
