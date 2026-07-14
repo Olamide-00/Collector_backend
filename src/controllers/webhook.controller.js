@@ -31,7 +31,7 @@ export async function handleFlutterwaveWebhook(req, res) {
           collection,
           amount: event.data.amount,
           reference: event.data.reference,
-          paidAt: new Date(event.data.created_datetime * 1000),
+          paidAt: new Date(event.data.created_datetime),
         });
       }
     }

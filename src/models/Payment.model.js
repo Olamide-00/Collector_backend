@@ -41,7 +41,7 @@ const paymentSchema = new mongoose.Schema(
       enum: Object.values(PAYMENT_SOURCE),
       default: PAYMENT_SOURCE.MANUAL,
     },
-    paystackReference: {
+    flutterwaveReference: {
       type: String,
       unique: true,
       sparse: true,
