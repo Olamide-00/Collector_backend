@@ -55,9 +55,9 @@ export async function createCollection(
   });
 
   // The collection is already persisted at this point. If assigning the
-  // debtor login fails for any reason (duplicate email, validation error,
-  // etc.), we must not leave an orphaned collection with no user attached
-  // to it — roll it back and surface a clear error instead.
+  // debtor login fails for any reason (validation error, etc.), we must not
+  // leave an orphaned collection with no user attached to it — roll it back
+  // and surface a clear error instead.
   try {
     await userService.assignDebtorLogin(
       collection._id,
@@ -117,10 +117,9 @@ export async function getCollectionById(id, requestingUser) {
     throw new ApiError(HTTP.NOT_FOUND, "Collection not found");
   }
 
-  if (
-    requestingUser.role !== ROLES.ADMIN &&
-    requestingUser.collectionId !== id
-  ) {
+  const isOwner = requestingUser.collectionIds?.includes(id);
+
+  if (requestingUser.role !== ROLES.ADMIN && !isOwner) {
     throw new ApiError(
       HTTP.FORBIDDEN,
       "You do not have access to this collection"

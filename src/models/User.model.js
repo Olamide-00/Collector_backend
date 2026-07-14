@@ -29,12 +29,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: ROLES.DEBTOR,
     },
-    collection: {
-      type: mongoose.Schema.Types.ObjectId,
+    collections: {
+      type: [mongoose.Schema.Types.ObjectId],
       ref: "Collection",
-      default: null,
-      unique: true,
-      sparse: true,
+      default: [],
     },
   },
   { timestamps: true }
@@ -56,7 +54,7 @@ userSchema.methods.toSafeObject = function toSafeObject() {
     email: this.email,
     phone: this.phone ?? undefined,
     role: this.role,
-    collectionId: this.collection ? this.collection.toString() : undefined,
+    collectionIds: this.collections.map((id) => id.toString()),
   };
 };
 

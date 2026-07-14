@@ -12,22 +12,18 @@ export async function assignDebtorLogin(collectionId, email, password, phone) {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  const emailOwner = await User.findOne({ email: normalizedEmail });
-  if (
-    emailOwner &&
-    emailOwner.collection?.toString() !== collectionId.toString()
-  ) {
-    throw new ApiError(
-      HTTP.CONFLICT,
-      "That email is already in use by another login"
-    );
-  }
+  let user = await User.findOne({ email: normalizedEmail });
 
-  let user = await User.findOne({ collection: collectionId });
   if (user) {
-    user.email = normalizedEmail;
-    user.password = password;
-    if (phone) user.phone = phone;
+    const alreadyLinked = user.collections.some(
+      (id) => id.toString() === collectionId.toString()
+    );
+    if (!alreadyLinked) {
+      user.collections.push(collectionId);
+    }
+    if (phone && !user.phone) {
+      user.phone = phone;
+    }
     await user.save();
   } else {
     user = await User.create({
@@ -35,7 +31,7 @@ export async function assignDebtorLogin(collectionId, email, password, phone) {
       password,
       phone,
       role: ROLES.DEBTOR,
-      collection: collectionId,
+      collections: [collectionId],
     });
   }
 
@@ -43,6 +39,6 @@ export async function assignDebtorLogin(collectionId, email, password, phone) {
 }
 
 export async function getUserForCollection(collectionId) {
-  const user = await User.findOne({ collection: collectionId });
+  const user = await User.findOne({ collections: collectionId });
   return user ? user.toSafeObject() : null;
 }
