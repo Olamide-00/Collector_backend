@@ -15,3 +15,9 @@ export const getPayments = catchAsync(async (req, res) => {
   const payments = await paymentService.getPaymentsForCollection(req.params.id)
   sendSuccess(res, HTTP.OK, 'Payments fetched', { payments })
 })
+
+export const editPayment = catchAsync(async (req, res) => {
+  await collectionService.getCollectionById(req.params.id, req.user)
+  const payment = await paymentService.editPayment(req.params.id, req.params.paymentId, req.body)
+  sendSuccess(res, HTTP.OK, 'Payment updated', { payment })
+})

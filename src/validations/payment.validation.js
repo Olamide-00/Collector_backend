@@ -10,3 +10,13 @@ export const addPaymentSchema = Joi.object({
     .required(),
   note: Joi.string().allow('', null).max(300),
 })
+
+export const editPaymentSchema = Joi.object({
+  amount: Joi.number().positive().required(),
+  note: Joi.string().allow('', null).max(300),
+})
+
+export const paymentIdParamSchema = Joi.object({
+  id: Joi.string().hex().length(24).required(),
+  paymentId: Joi.string().hex().length(24).required(),
+})

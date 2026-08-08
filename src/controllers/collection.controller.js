@@ -32,3 +32,8 @@ export const retryAccount = catchAsync(async (req, res) => {
   );
   sendSuccess(res, HTTP.OK, "Account creation retried", { collection });
 });
+
+export const deleteCollection = catchAsync(async (req, res) => {
+  await collectionService.deleteCollection(req.params.id);
+  sendSuccess(res, HTTP.OK, "Collection deleted");
+});

@@ -8,6 +8,7 @@ import {
   getCollections,
   getCollection,
   retryAccount,
+  deleteCollection,
 } from '../controllers/collection.controller.js'
 import { createCollectionSchema, collectionIdParamSchema } from '../validations/collection.validation.js'
 import paymentRoutes from './payment.routes.js'
@@ -20,6 +21,12 @@ router.use(protect)
 router.get('/', restrictTo(ROLES.ADMIN), getCollections)
 router.post('/', restrictTo(ROLES.ADMIN), validate(createCollectionSchema), createCollection)
 router.get('/:id', validate(collectionIdParamSchema, 'params'), getCollection)
+router.delete(
+  '/:id',
+  restrictTo(ROLES.ADMIN),
+  validate(collectionIdParamSchema, 'params'),
+  deleteCollection
+)
 router.post(
   '/:id/account/retry',
   restrictTo(ROLES.ADMIN),

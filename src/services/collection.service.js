@@ -1,4 +1,7 @@
+import mongoose from "mongoose";
 import { Collection } from "../models/Collection.model.js";
+import { Payment } from "../models/Payment.model.js";
+import { User } from "../models/User.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { HTTP } from "../constants/httpStatus.js";
 import { ROLES } from "../constants/roles.js";
@@ -6,10 +9,7 @@ import { ACCOUNT_STATUS } from "../constants/collection.js";
 import * as flutterwaveService from "./flutterwave.js";
 import * as userService from "./user.service.js";
 
-// Calls Flutterwave to create a customer + dedicated virtual account for a collection,
-// then persists the result. Any failure marks the collection accountStatus 'failed'
-// so the frontend can offer a retry — it never throws back to the caller.
-// bvn is passed through only, never stored on the collection or user record.
+
 async function provisionDedicatedAccount(
   collection,
   customerEmail,
@@ -127,6 +127,31 @@ export async function getCollectionById(id, requestingUser) {
   }
 
   return collection;
+}
+
+// Admin-only. Deletes the collection along with all of its payment history,
+// and pulls the collection's id out of any user's `collections` array so no
+// debtor login is left pointing at a deleted collection.
+//
+// NOT run inside a transaction — this assumes a standalone MongoDB instance,
+// which doesn't support multi-document transactions. Operations are ordered
+// so the collection document itself is deleted LAST: if something fails
+// partway through, you're left with an orphaned-but-still-referenced
+// collection (safe, visible, retryable) rather than payments or user
+// references pointing at a collection that no longer exists.
+//
+// If this ever moves to a replica set, wrap these three calls in
+// `session.withTransaction()` instead.
+
+export async function deleteCollection(id) {
+  const collection = await Collection.findById(id);
+  if (!collection) {
+    throw new ApiError(HTTP.NOT_FOUND, "Collection not found");
+  }
+
+  await Payment.deleteMany({ collection: id });
+  await User.updateMany({ collections: id }, { $pull: { collections: id } });
+  await Collection.findByIdAndDelete(id);
 }
 
 export async function getTotals() {
